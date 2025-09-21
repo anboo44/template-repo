@@ -1,1 +1,0 @@
-const example_key = "example123";
