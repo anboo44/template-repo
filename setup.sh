@@ -174,23 +174,40 @@ EOF
     fi
 }
 
-# Function to setup secretlint in home directory
+# Function to setup secretlint in shared directory
 setup_secretlint_home() {
-    print_status "Thiết lập secretlint trong home directory..."
+    print_status "Thiết lập secretlint từ shared repository..."
     
-    # Copy secretlint folder to home directory
-    if [ -d "$HOME/secretlint" ]; then
-        rm -rf "$HOME/secretlint"
+    if [ ! -d "$SHARED_REPO_DIR/secretlint" ]; then
+        print_error "Secretlint folder không tồn tại trong shared repository"
+        return 1
     fi
     
-    cp -r "$SHARED_REPO_DIR/secretlint" "$HOME/"
-    
-    # Install dependencies
-    cd "$HOME/secretlint"
+    # Install dependencies in shared repo secretlint folder
+    cd "$SHARED_REPO_DIR/secretlint"
     npm install
+    
+    # Create initial merged config
+    print_status "Tạo initial secretlint config..."
+    if [ -f "$OLDPWD/$CUSTOM_CONFIG_FILE" ]; then
+        node merge.js "$OLDPWD/$CUSTOM_CONFIG_FILE"
+    else
+        node merge.js
+    fi
+    
+    # Copy merged config to home directory
+    if [ -f ".secretlintrc.json" ]; then
+        cp .secretlintrc.json "$HOME/.secretlintrc.json"
+        print_success "Initial secretlint config đã được tạo"
+    else
+        print_error "Không thể tạo initial config"
+        cd - > /dev/null
+        return 1
+    fi
+    
     cd - > /dev/null
     
-    print_success "Secretlint đã được thiết lập trong home directory"
+    print_success "Secretlint đã được thiết lập từ shared repository"
 }
 
 # Function to create git pre-commit hook
@@ -269,12 +286,34 @@ fi
 
 # 2. Merge secretlint configurations
 print_status "Merge secretlint configurations..."
-cd "$HOME/secretlint"
+if [ ! -d "$SHARED_REPO_DIR/secretlint" ]; then
+    print_error "Secretlint không tồn tại trong shared repository"
+    exit 1
+fi
+
+cd "$SHARED_REPO_DIR/secretlint"
+
+# Install dependencies if needed
+if [ ! -d "node_modules" ]; then
+    npm install > /dev/null 2>&1
+fi
+
+# Run merge.js
 if [ -f "$OLDPWD/$CUSTOM_CONFIG_FILE" ]; then
     node merge.js "$OLDPWD/$CUSTOM_CONFIG_FILE"
 else
     node merge.js
 fi
+
+# Copy merged config to home directory for secretlint to find
+if [ -f ".secretlintrc.json" ]; then
+    cp .secretlintrc.json "$HOME/.secretlintrc.json"
+    print_success "Merged secretlint config đã được tạo"
+else
+    print_error "Không thể tạo merged config"
+    exit 1
+fi
+
 cd - > /dev/null
 
 # 3. Get staged files for secretlint checking
@@ -293,21 +332,35 @@ FAILED=false
 
 for file in $STAGED_FILES; do
     if [ -f "$file" ]; then
-        # Copy staged version to temp directory
-        mkdir -p "$TEMP_DIR/$(dirname "$file")"
-        git show ":$file" > "$TEMP_DIR/$file" 2>/dev/null || continue
+        # Skip secretlint config files to avoid false positives
+        case "$file" in
+            *secretlintrc* | *.secretlintrc.json | .secretlintignore)
+                print_status "Skipping secretlint config file: $file"
+                continue
+                ;;
+        esac
         
-        # Run secretlint on the file
-        if ! npx secretlint "$TEMP_DIR/$file" --config "$HOME/.secretlintrc.json" > /dev/null 2>&1; then
+        # Create temp file in secretlint directory for scanning
+        SECRETLINT_TEMP_DIR="$SHARED_REPO_DIR/secretlint/temp_scan"
+        mkdir -p "$SECRETLINT_TEMP_DIR/$(dirname "$file")"
+        git show ":$file" > "$SECRETLINT_TEMP_DIR/$file" 2>/dev/null || continue
+        
+        # Run secretlint on the file from shared-repo directory
+        cd "$SHARED_REPO_DIR/secretlint"
+        if ! npx secretlint "temp_scan/$file" --secretlintrc "$HOME/.secretlintrc.json" > /dev/null 2>&1; then
             print_error "Secrets detected in: $file"
-            npx secretlint "$TEMP_DIR/$file" --config "$HOME/.secretlintrc.json"
+            npx secretlint "temp_scan/$file" --secretlintrc "$HOME/.secretlintrc.json"
             FAILED=true
         fi
+        cd - > /dev/null
     fi
 done
 
 # Cleanup
 rm -rf "$TEMP_DIR"
+if [ -d "$SHARED_REPO_DIR/secretlint/temp_scan" ]; then
+    rm -rf "$SHARED_REPO_DIR/secretlint/temp_scan"
+fi
 
 if [ "$FAILED" = true ]; then
     print_error "Commit bị từ chối do phát hiện secrets"
@@ -349,9 +402,15 @@ validate_setup() {
         errors=$((errors + 1))
     fi
     
-    # Check secretlint in home
-    if [ ! -d "$HOME/secretlint" ]; then
-        print_error "Secretlint không được setup trong home directory"
+    # Check secretlint in shared repo
+    if [ ! -d "$SHARED_REPO_DIR/secretlint" ]; then
+        print_error "Secretlint không tồn tại trong shared repository"
+        errors=$((errors + 1))
+    fi
+    
+    # Check merged secretlint config
+    if [ ! -f "$HOME/.secretlintrc.json" ]; then
+        print_error "Merged secretlint config không tồn tại"
         errors=$((errors + 1))
     fi
     
@@ -426,12 +485,14 @@ main() {
         echo "✅ Shared repository tại $SHARED_REPO_DIR"
         echo "✅ Shared resources tại $TEMPLATE_SHARED_DIR"
         echo "✅ Custom secretlint config tại $CUSTOM_CONFIG_FILE"
-        echo "✅ Secretlint setup tại $HOME/secretlint"
+        echo "✅ Secretlint tools tại $SHARED_REPO_DIR/secretlint"
+        echo "✅ Merged config tại $HOME/.secretlintrc.json"
         echo "✅ Git pre-commit hook"
         echo ""
         echo "Từ bây giờ, mỗi lần commit sẽ:"
-        echo "• Cập nhật shared resources"
-        echo "• Kiểm tra secrets trong code changes"
+        echo "• Cập nhật shared resources và secretlint tools"
+        echo "• Merge secretlint configurations"
+        echo "• Kiểm tra secrets trong code changes only"
         echo "• Ngăn commit nếu phát hiện secrets"
         echo ""
     else
