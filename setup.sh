@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 SHARED_REPO_URL="https://github.com/anboo44/shared-repo"
 SHARED_REPO_DIR="$HOME/.shared-repo"
 TEMPLATE_SHARED_DIR=".github/shared"
-TEMPLATE_SECRETLINT_DIR=".github/secretlint"
+TEMPLATE_SECRETLINT_DIR=".vscode"
 CUSTOM_CONFIG_FILE="$TEMPLATE_SECRETLINT_DIR/custom.secretlintrc.json"
 
 # Function to print colored output
@@ -145,7 +145,7 @@ copy_shared_resources() {
 create_secretlint_config() {
     print_status "Tạo secretlint configuration..."
     
-    # Create secretlint directory
+    # Create .vscode directory
     mkdir -p "$TEMPLATE_SECRETLINT_DIR"
     
     # Create custom.secretlintrc.json if not exists
@@ -252,7 +252,7 @@ print_error() {
 # Configuration
 SHARED_REPO_DIR="$HOME/.shared-repo"
 TEMPLATE_SHARED_DIR=".github/shared"
-CUSTOM_CONFIG_FILE=".github/secretlint/custom.secretlintrc.json"
+CUSTOM_CONFIG_FILE=".vscode/custom.secretlintrc.json"
 
 print_status "Chạy pre-commit checks..."
 
