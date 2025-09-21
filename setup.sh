@@ -42,6 +42,30 @@ git clone --depth 1 "$SHARED_REPO_URL" "$TEMP_DIR"
 echo "📋 Copying shared resources..."
 cp -r "$TEMP_DIR/shared" "$TARGET_DIR"
 
+# Copy secretlint config and setup
+echo "🔐 Setting up secretlint..."
+if [ -f "$TEMP_DIR/package.json" ]; then
+    cp "$TEMP_DIR/package.json" "./"
+fi
+
+if [ -f "$TEMP_DIR/package-lock.json" ]; then
+    cp "$TEMP_DIR/package-lock.json" "./"
+fi
+
+if [ -f "$TEMP_DIR/.secretlintrc.json" ]; then
+    cp "$TEMP_DIR/.secretlintrc.json" "./"
+fi
+
+if [ -d "$TEMP_DIR/secretlint" ]; then
+    cp -r "$TEMP_DIR/secretlint" "./"
+fi
+
+# Install secretlint dependencies
+if [ -f "package.json" ]; then
+    echo "📦 Installing secretlint dependencies..."
+    npm install
+fi
+
 # Set up git hooks
 echo "🔧 Setting up git hooks..."
 HOOKS_DIR=".git/hooks"
@@ -50,7 +74,7 @@ HOOKS_DIR=".git/hooks"
 cat > "$HOOKS_DIR/pre-commit" << 'EOF'
 #!/bin/bash
 
-# Pre-commit hook to update shared resources from shared-repo
+# Pre-commit hook to update shared resources and run secretlint
 
 SHARED_REPO_URL="https://github.com/anboo44/shared-repo.git"
 TEMP_DIR=".temp_shared_repo_hook"
@@ -70,26 +94,69 @@ trap cleanup_hook EXIT
 # Clone latest shared-repo
 git clone --depth 1 "$SHARED_REPO_URL" "$TEMP_DIR" > /dev/null 2>&1
 
-# Check if there are updates
+# Check if there are updates to shared resources
 if [ -d "$TARGET_DIR" ]; then
-    # Compare directories and update if different
     if ! diff -r "$TEMP_DIR/shared" "$TARGET_DIR" > /dev/null 2>&1; then
         echo "📦 Updating shared resources..."
         rm -rf "$TARGET_DIR"
         cp -r "$TEMP_DIR/shared" "$TARGET_DIR"
-        
-        # Add updated files to git
         git add "$TARGET_DIR"
         echo "✅ Shared resources updated and staged for commit"
-    else
-        echo "✅ Shared resources are up to date"
     fi
 else
-    # First time setup
     echo "📦 Setting up shared resources for the first time..."
     cp -r "$TEMP_DIR/shared" "$TARGET_DIR"
     git add "$TARGET_DIR"
     echo "✅ Shared resources added and staged for commit"
+fi
+
+# Update secretlint config if changed
+secretlint_updated=false
+
+if [ -f "$TEMP_DIR/.secretlintrc.json" ]; then
+    if ! diff "$TEMP_DIR/.secretlintrc.json" ".secretlintrc.json" > /dev/null 2>&1; then
+        cp "$TEMP_DIR/.secretlintrc.json" "./"
+        secretlint_updated=true
+        echo "📝 Updated secretlint config"
+    fi
+fi
+
+if [ -d "$TEMP_DIR/secretlint" ] && [ -d "secretlint" ]; then
+    if ! diff -r "$TEMP_DIR/secretlint" "secretlint" > /dev/null 2>&1; then
+        rm -rf "secretlint"
+        cp -r "$TEMP_DIR/secretlint" "./"
+        secretlint_updated=true
+        echo "� Updated secretlint rules"
+    fi
+fi
+
+# Reinstall dependencies if secretlint config was updated
+if [ "$secretlint_updated" = true ] && [ -f "package.json" ]; then
+    echo "📦 Reinstalling dependencies due to secretlint updates..."
+    npm install > /dev/null 2>&1
+fi
+
+# Run secretlint on staged files
+if command -v npx > /dev/null 2>&1 && [ -f "package.json" ]; then
+    echo "🔐 Running secretlint on staged files..."
+    
+    # Get list of staged files
+    staged_files=$(git diff --cached --name-only --diff-filter=ACM)
+    
+    if [ -n "$staged_files" ]; then
+        # Run secretlint on staged files
+        if ! echo "$staged_files" | xargs npx secretlint; then
+            echo "❌ Secretlint found potential secrets in your commit!"
+            echo "Please review and fix the issues before committing."
+            exit 1
+        else
+            echo "✅ Secretlint check passed"
+        fi
+    else
+        echo "ℹ️ No staged files to check"
+    fi
+else
+    echo "⚠️ Secretlint not available - skipping secret detection"
 fi
 
 EOF
@@ -101,7 +168,9 @@ echo "✅ Setup completed successfully!"
 echo ""
 echo "📋 What was done:"
 echo "  - Copied shared resources from shared-repo to $TARGET_DIR"
-echo "  - Set up pre-commit hook to auto-update shared resources"
+echo "  - Set up secretlint configuration and dependencies"
+echo "  - Set up pre-commit hook to auto-update shared resources and run secretlint"
 echo ""
-echo "🎉 Your template-repo is now configured with shared resources!"
+echo "🎉 Your template-repo is now configured with shared resources and secret detection!"
 echo "   The shared resources will be automatically updated before each commit."
+echo "   Secretlint will check for secrets in your commits."
