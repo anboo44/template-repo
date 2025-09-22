@@ -35,6 +35,6 @@ Everytime you make a commit, the pre-commit hook will automatically:
 - Synchronize shared resources from the template repository.
 - Run secretlint to detect any secrets in your code.
 
-![Prevent commit example](prevent-commit.png)
+![Prevent commit example](docs/prevent-commit.png)
 
 **Happy coding! 🚀**
