@@ -1,0 +1,7 @@
+{
+    "github.copilot.chat.commitMessageGeneration.instructions": [
+        {
+            "text": "Run the command `git branch --show-current` to determine the current branch. Then, extract the ticket name from the branch name, which should be in the format `*/FV-{number}-*`. Use it as the ticket name in the commit message. Commit message should be short and concise. Example: `feature/FV-1234-add-new-feature` will extract `FV-1234`. Output commit message: `FV-1234: write unit tests for user authentication`"
+        }
+    ]
+}
