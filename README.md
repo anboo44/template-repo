@@ -10,7 +10,7 @@ This template repository provides automated setup for shared resources synchroni
 - **Git** (for repository operations)
 - **npm** (for dependency management)
 
-### Initial Setup
+### Initial Setup on your repository
 
 1. **Run the setup script:**
    ```bash
@@ -26,13 +26,15 @@ This template repository provides automated setup for shared resources synchroni
 
 3. **Update custom secretlint rules (if any) at:**
    ```text
-   .github/secretlint/custom.secretlintrc.json
+   .vscode/custom.secretlintrc.json
    ```   
 
 ### Usage
 
-Every time you make a commit, the pre-commit hook will automatically:
+Everytime you make a commit, the pre-commit hook will automatically:
 - Synchronize shared resources from the template repository.
 - Run secretlint to detect any secrets in your code.
+
+![Prevent commit example](prevent-commit.png)
 
 **Happy coding! 🚀**
