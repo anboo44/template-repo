@@ -195,9 +195,8 @@ setup_secretlint_home() {
         node merge.js
     fi
     
-    # Copy merged config to home directory
+    # Verify merged config was created
     if [ -f ".secretlintrc.json" ]; then
-        cp .secretlintrc.json "$HOME/.secretlintrc.json"
         print_success "Initial secretlint config đã được tạo"
     else
         print_error "Không thể tạo initial config"
@@ -305,9 +304,8 @@ else
     node merge.js
 fi
 
-# Copy merged config to home directory for secretlint to find
+# Verify merged config was created
 if [ -f ".secretlintrc.json" ]; then
-    cp .secretlintrc.json "$HOME/.secretlintrc.json"
     print_success "Merged secretlint config đã được tạo"
 else
     print_error "Không thể tạo merged config"
@@ -347,9 +345,9 @@ for file in $STAGED_FILES; do
         
         # Run secretlint on the file from shared-repo directory
         cd "$SHARED_REPO_DIR/secretlint"
-        if ! npx secretlint "temp_scan/$file" --secretlintrc "$HOME/.secretlintrc.json" > /dev/null 2>&1; then
+        if ! npx secretlint "temp_scan/$file" --secretlintrc ".secretlintrc.json" > /dev/null 2>&1; then
             print_error "Secrets detected in: $file"
-            npx secretlint "temp_scan/$file" --secretlintrc "$HOME/.secretlintrc.json"
+            npx secretlint "temp_scan/$file" --secretlintrc ".secretlintrc.json"
             FAILED=true
         fi
         cd - > /dev/null
@@ -409,7 +407,7 @@ validate_setup() {
     fi
     
     # Check merged secretlint config
-    if [ ! -f "$HOME/.secretlintrc.json" ]; then
+    if [ ! -f "$SHARED_REPO_DIR/secretlint/.secretlintrc.json" ]; then
         print_error "Merged secretlint config không tồn tại"
         errors=$((errors + 1))
     fi
@@ -486,7 +484,7 @@ main() {
         echo "✅ Shared resources tại $TEMPLATE_SHARED_DIR"
         echo "✅ Custom secretlint config tại $CUSTOM_CONFIG_FILE"
         echo "✅ Secretlint tools tại $SHARED_REPO_DIR/secretlint"
-        echo "✅ Merged config tại $HOME/.secretlintrc.json"
+        echo "✅ Merged config tại $SHARED_REPO_DIR/secretlint/.secretlintrc.json"
         echo "✅ Git pre-commit hook"
         echo ""
         echo "Từ bây giờ, mỗi lần commit sẽ:"

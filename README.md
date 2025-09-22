@@ -19,9 +19,24 @@ This template repository provides automated setup for shared resources synchroni
 
 2. **Verify the setup:**
    ```text
-    ==================================================
-    [SUCCESS] SETUP HOÀN THÀNH THÀNH CÔNG!
-    ==================================================
+      ==================================================
+      [SUCCESS] SETUP HOÀN THÀNH THÀNH CÔNG!
+      ==================================================
+
+      Những gì đã được thiết lập:
+      ✅ Node.js ≥v20
+      ✅ Shared repository tại /Users/hung_pt/.shared-repo
+      ✅ Shared resources tại .github/shared
+      ✅ Custom secretlint config tại .vscode/custom.secretlintrc.json
+      ✅ Secretlint tools tại /Users/hung_pt/.shared-repo/secretlint
+      ✅ Merged config tại /Users/hung_pt/.shared-repo/secretlint/.secretlintrc.json
+      ✅ Git pre-commit hook
+
+      Từ bây giờ, mỗi lần commit sẽ:
+      • Cập nhật shared resources và secretlint tools
+      • Merge secretlint configurations
+      • Kiểm tra secrets trong code changes only
+      • Ngăn commit nếu phát hiện secrets
    ```
 
 3. **Update custom secretlint rules (if any) at:**
