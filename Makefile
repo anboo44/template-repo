@@ -1,7 +1,14 @@
 # =============================================================================
 # MAKEFILE TEMPLATE
-# Uncomment and modify the sections you need for your specific project
+#
+# VERSION: 1.0.0
+# LAST UPDATED: {{DATE}}
 # =============================================================================
+#
+# INSTRUCTIONS FOR USE:
+# - 1. Replace all {{FILL_COMMAND_IF_NEED}} values with your actual commands.
+# - 2. Uncomment them to activate
+# =================================================================================
 
 # Project Configuration
 PROJECT_NAME := my-project
@@ -42,7 +49,7 @@ setup-local: ## Setup local environment with shared repository
 	@echo "$(BLUE)Setting up local environment...$(NC)"
 	@$(MAKE) setup-pre-commit
 	@$(MAKE) install
-	# Add other cleanup commands as needed
+	# {{FILL_COMMAND_IF_NEED}}
 	@echo "$(GREEN)Local environment setup completed!$(NC)"
 
 .PHONY: setup-shared-repo
@@ -105,7 +112,7 @@ setup-pre-commit: setup-shared-repo ## Setup pre-commit hooks using shared scrip
 .PHONY: install
 install: ## Install dependencies
 	@echo "$(BLUE)Installing dependencies...$(NC)"
-	# Add your dependency installation commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	# Example for Python: pip install -r requirements.txt
 	# Example for Node.js: npm install
 	@echo "$(GREEN)Dependencies installed!$(NC)"	
@@ -117,7 +124,7 @@ install: ## Install dependencies
 .PHONY: compile
 compile: ## Compile the application
 	@echo "$(BLUE)Compiling $(PROJECT_NAME)...$(NC)"
-	# Add your compilation commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	# Example for Java: javac -d bin src/*.java
 	# Example for Go: go build -o $(PROJECT_NAME) main.go
 	# Example for C/C++: gcc -o $(PROJECT_NAME) src/*.c
@@ -125,7 +132,7 @@ compile: ## Compile the application
 .PHONY: run
 run: ## Run the application in development mode
 	@echo "$(BLUE)Starting $(PROJECT_NAME)...$(NC)"
-	# Add your run commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	# Example for Python: python $(SRC_DIR)/main.py
 	# Example for Node.js: npm start
 	# Example for Go: go run main.go
@@ -133,7 +140,7 @@ run: ## Run the application in development mode
 .PHONY: run-prod
 run-prod: ## Run the application in production mode
 	@echo "$(BLUE)Starting $(PROJECT_NAME) in production mode...$(NC)"
-	# Add your production run commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	# Example for Python: gunicorn -w 4 -b 0.0.0:8000 $(SRC_DIR):app
 	# Example for Node.js: NODE_ENV=production npm start
 	# Example for Go: ./$(PROJECT_NAME)		
@@ -145,19 +152,19 @@ run-prod: ## Run the application in production mode
 .PHONY: db-setup
 db-setup: ## Setup database
 	@echo "$(BLUE)Setting up database...$(NC)"
-	# Add your database setup commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	@echo "$(GREEN)Database setup completed!$(NC)"
 
 .PHONY: db-migrate
 db-migrate: ## Run database migrations
 	@echo "$(BLUE)Running database migrations...$(NC)"
-	# Add your migration commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	@echo "$(GREEN)Migrations completed!$(NC)"
 
 .PHONY: db-seed
 db-seed: ## Seed database with sample data
 	@echo "$(BLUE)Seeding database...$(NC)"
-	# Add your database seeding commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	@echo "$(GREEN)Database seeded!$(NC)"
 
 # =============================================================================
@@ -167,7 +174,7 @@ db-seed: ## Seed database with sample data
 .PHONY: lint-check
 lint-check: ## Run linter
 	@echo "$(BLUE)Running linter...$(NC)"
-	# Add your linting commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	# Example for JavaScript: eslint $(SRC_DIR)/
 	# Example for Go: golangci-lint run
 	# Example for Python: ruff check
@@ -176,7 +183,7 @@ lint-check: ## Run linter
 .PHONY: format
 format: ## Format code
 	@echo "$(BLUE)Formatting code...$(NC)"
-	# Add your formatting commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	# Example for Python: black $(SRC_DIR)/ && isort $(SRC_DIR)/
 	# Example for JavaScript: prettier --write $(SRC_DIR)/
 	# Example for Go: go fmt ./...
@@ -185,7 +192,7 @@ format: ## Format code
 .PHONY: format-check
 format-check: ## Check code formatting
 	@echo "$(BLUE)Checking code formatting...$(NC)"
-	# Add your format checking commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	# Example for Python: black --check $(SRC_DIR)/ && isort --check-only $(SRC_DIR)/
 	# Example for JavaScript: prettier --check $(SRC_DIR)/
 	# Example for Go: go fmt -l ./...
@@ -194,7 +201,7 @@ format-check: ## Check code formatting
 .PHONY: test
 test: ## Run tests
 	@echo "$(BLUE)Running tests...$(NC)"
-	# Add your test commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	# Example for Python: pytest tests/
 	# Example for JavaScript: jest
 	# Example for Go: go test ./......
@@ -203,7 +210,7 @@ test: ## Run tests
 .PHONY: test-coverage
 test-coverage: ## Run tests with coverage report
 	@echo "$(BLUE)Running tests with coverage...$(NC)"
-	# Add your test coverage commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	# Example for Python: pytest --cov=$(SRC_DIR) tests/ --cov-report=term-missing
 	# Example for JavaScript: jest --coverage
 	# Example for Go: go test -cover ./......
@@ -223,17 +230,17 @@ check-quality-ci: ## Run all code quality checks
 .PHONY: build-dev
 build-dev: ## Build the application in development mode
 	@echo "$(BLUE)Building $(PROJECT_NAME) in development mode...$(NC)"
-	# Add your development build commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	@echo "$(GREEN)Development build completed!$(NC)"
 
 .PHONY: build-stg
 build-stg: ## Build the application in staging mode
 	@echo "$(BLUE)Building $(PROJECT_NAME) in staging mode...$(NC)"
-	# Add your staging build commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	@echo "$(GREEN)Staging build completed!$(NC)"
 
 .PHONY: build-prod
 build-prod: ## Build the application in production mode
 	@echo "$(BLUE)Building $(PROJECT_NAME) in production mode...$(NC)"
-	# Add your production build commands here
+	# {{FILL_COMMAND_IF_NEED}}
 	@echo "$(GREEN)Production build completed!$(NC)"
